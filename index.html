@@ -22,7 +22,8 @@
   .hero h1 em{color:var(--rosa-light);}
   .hero-sub{font-size:12px;color:var(--cinza2);margin-bottom:18px;}
   .hero-chips{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
-  .chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--rosa-light);}
+  .chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--rosa-light);text-decoration:none;transition:all .2s;cursor:pointer;}
+  .chip:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.3);color:#fff;}
 
   .steps{display:flex;justify-content:center;background:var(--branco);border-bottom:1px solid var(--borda);overflow-x:auto;}
   .step{flex:1;min-width:70px;max-width:120px;padding:12px 6px;text-align:center;font-size:10px;color:var(--cinza2);border-bottom:2px solid transparent;cursor:default;}
@@ -114,9 +115,9 @@
   <h1>NL Studio <em>Beauty</em></h1>
   <div class="hero-sub">Cabelo · Sobrancelhas · Unhas · Cidade Ocidental – GO</div>
   <div class="hero-chips">
-    <span class="chip">📍 SQ 16 Q5 Lote 27D, 1º Andar</span>
-    <span class="chip">📱 (61) 98180-6389</span>
-    <span class="chip">📸 @nlstudio_1</span>
+    <a class="chip" href="https://maps.app.goo.gl/5yKKNYndxeRcz1of8" target="_blank">📍 SQ 16 Q5 Lote 27D, 1º Andar</a>
+    <a class="chip" href="https://wa.me/5561981806389" target="_blank">📱 (61) 98180-6389</a>
+    <a class="chip" href="https://instagram.com/nlstudio_1" target="_blank">📸 @nlstudio_1</a>
   </div>
 </div>
 

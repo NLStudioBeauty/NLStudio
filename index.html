@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agendamento — NL Studio Beauty</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rosa:#C9736A;--rosa2:#B85E55;--rosa-light:#F2C4BC;--rosa-pale:#FDF0EE;
+    --ouro:#B8935A;--ouro-pale:#F9F0E3;--lilas:#7B5EA7;--lilas-pale:#F0ECF8;
+    --escuro:#2A1F1A;--cinza:#6B4F44;--cinza2:#9A8880;--bg:#FAF7F4;
+    --branco:#FFFFFF;--borda:#EDE5E0;--verde:#3B6D11;--verde-bg:#EAF3DE;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--escuro);min-height:100vh;}
+
+  .hero{background:var(--escuro);padding:44px 24px 36px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:var(--rosa);border-radius:50%;opacity:.1;}
+  .hero-tag{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--rosa-light);margin-bottom:10px;}
+  .hero h1{font-family:'Cormorant Garamond',serif;font-size:2.4rem;color:var(--branco);line-height:1.1;margin-bottom:6px;}
+  .hero h1 em{color:var(--rosa-light);}
+  .hero-sub{font-size:12px;color:var(--cinza2);margin-bottom:18px;}
+  .hero-chips{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
+  .chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--rosa-light);}
+
+  .steps{display:flex;justify-content:center;background:var(--branco);border-bottom:1px solid var(--borda);overflow-x:auto;}
+  .step{flex:1;min-width:70px;max-width:120px;padding:12px 6px;text-align:center;font-size:10px;color:var(--cinza2);border-bottom:2px solid transparent;cursor:default;}
+  .step.active{color:var(--rosa);border-bottom-color:var(--rosa);font-weight:600;}
+  .step.done{color:var(--verde);}
+  .step-num{width:22px;height:22px;border-radius:50%;background:var(--borda);color:var(--cinza2);font-size:11px;font-weight:600;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+  .step.active .step-num{background:var(--rosa);color:var(--branco);}
+  .step.done .step-num{background:var(--verde);color:var(--branco);}
+
+  .panel{display:none;padding:26px 20px;max-width:580px;margin:0 auto;}
+  .panel.active{display:block;animation:fadeUp .3s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+  .ptitle{font-family:'Cormorant Garamond',serif;font-size:1.5rem;margin-bottom:4px;}
+  .psub{font-size:12px;color:var(--cinza2);margin-bottom:20px;}
+
+  .prof-grid{display:flex;flex-direction:column;gap:10px;}
+  .prof-card{background:var(--branco);border:1.5px solid var(--borda);border-radius:14px;padding:15px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .2s;}
+  .prof-card:hover{border-color:var(--rosa-light);}
+  .prof-card.selected{border-color:var(--rosa);background:var(--rosa-pale);}
+  .avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:var(--branco);flex-shrink:0;}
+  .pname{font-weight:600;font-size:14px;margin-bottom:2px;}
+  .prole{font-size:12px;color:var(--cinza);}
+
+  .servico-grid{display:flex;flex-direction:column;gap:7px;}
+  .servico-item{background:var(--branco);border:1.5px solid var(--borda);border-radius:12px;padding:13px 15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s;}
+  .servico-item:hover{border-color:var(--rosa-light);}
+  .servico-item.selected{border-color:var(--rosa);background:var(--rosa-pale);}
+  .snome{font-weight:500;font-size:13px;margin-bottom:2px;}
+  .sdur{font-size:11px;color:var(--cinza2);}
+  .spreco{font-weight:600;font-size:13px;color:var(--rosa);white-space:nowrap;}
+
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .cal-nav button{background:none;border:1px solid var(--borda);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;color:var(--cinza);transition:all .15s;}
+  .cal-nav button:hover{border-color:var(--rosa);color:var(--rosa);}
+  .cal-month{font-weight:600;font-size:14px;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:16px;}
+  .cal-dow{text-align:center;font-size:10px;font-weight:600;color:var(--cinza2);padding:4px 0;text-transform:uppercase;letter-spacing:.5px;}
+  .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:7px;font-size:12px;cursor:pointer;transition:all .15s;border:1px solid transparent;}
+  .cal-day:hover:not(.disabled):not(.empty){border-color:var(--rosa-light);background:var(--rosa-pale);}
+  .cal-day.selected{background:var(--rosa);color:var(--branco);font-weight:600;}
+  .cal-day.today{border-color:var(--rosa);font-weight:600;color:var(--rosa);}
+  .cal-day.disabled{color:#DDD;cursor:default;}
+  .cal-day.empty{cursor:default;}
+
+  .horario-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:6px;}
+  .horario-btn{padding:9px 0;border-radius:9px;border:1.5px solid var(--borda);background:var(--branco);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;text-align:center;}
+  .horario-btn:hover:not(.ocupado){border-color:var(--rosa-light);background:var(--rosa-pale);}
+  .horario-btn.selected{background:var(--rosa);color:var(--branco);border-color:var(--rosa);}
+  .horario-btn.ocupado{background:#F5F5F5;color:#CCC;cursor:not-allowed;border-color:#EEE;text-decoration:line-through;}
+
+  .form-group{margin-bottom:14px;}
+  .form-label{display:block;font-size:11px;font-weight:600;color:var(--cinza);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+  .form-input{width:100%;padding:11px 13px;border:1.5px solid var(--borda);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--branco);color:var(--escuro);outline:none;transition:border .15s;}
+  .form-input:focus{border-color:var(--rosa);}
+
+  .btn{width:100%;padding:13px;border-radius:12px;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:6px;}
+  .btn-primary{background:var(--rosa);color:var(--branco);}
+  .btn-primary:hover{background:var(--rosa2);transform:translateY(-1px);}
+  .btn-secondary{background:transparent;border:1.5px solid var(--borda);color:var(--cinza);}
+  .btn-secondary:hover{border-color:var(--rosa-light);}
+
+  .resumo-card{background:var(--branco);border:1px solid var(--borda);border-radius:14px;padding:18px;margin-bottom:18px;}
+  .resumo-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--borda);font-size:13px;}
+  .resumo-row:last-child{border-bottom:none;}
+  .rlabel{color:var(--cinza2);}
+  .rvalue{font-weight:500;}
+  .rprice{font-weight:700;font-size:15px;color:var(--rosa);}
+
+  .confirmacao{text-align:center;padding:36px 20px;max-width:480px;margin:0 auto;}
+  .check-circle{width:68px;height:68px;border-radius:50%;background:var(--verde-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:30px;color:var(--verde);}
+  .conf-title{font-family:'Cormorant Garamond',serif;font-size:1.7rem;margin-bottom:6px;}
+  .conf-sub{font-size:12px;color:var(--cinza2);margin-bottom:22px;}
+  .conf-box{background:var(--rosa-pale);border-radius:14px;padding:18px;margin-bottom:18px;text-align:left;}
+  .conf-row{display:flex;gap:10px;font-size:13px;margin-bottom:7px;align-items:center;}
+  .conf-row:last-child{margin-bottom:0;}
+  .wpp-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:var(--branco);padding:13px;border-radius:12px;font-weight:600;font-size:13px;text-decoration:none;transition:all .2s;margin-bottom:8px;}
+  .wpp-btn:hover{background:#1FB855;transform:translateY(-1px);}
+  .novo-btn{width:100%;padding:11px;background:none;border:1.5px solid var(--borda);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--cinza);cursor:pointer;transition:all .2s;}
+  .novo-btn:hover{border-color:var(--rosa);color:var(--rosa);}
+  .divider{height:1px;background:var(--borda);margin:14px 0;}
+  .error-msg{color:#C0392B;font-size:11px;margin-top:3px;display:none;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Agendamento Online</div>
+  <h1>NL Studio <em>Beauty</em></h1>
+  <div class="hero-sub">Cabelo · Sobrancelhas · Unhas · Cidade Ocidental – GO</div>
+  <div class="hero-chips">
+    <span class="chip">📍 SQ 16 Q5 Lote 27D, 1º Andar</span>
+    <span class="chip">📱 (61) 98180-6389</span>
+    <span class="chip">📸 @nlstudio_1</span>
+  </div>
+</div>
+
+<div class="steps">
+  <div class="step active" id="step1"><div class="step-num">1</div>Profissional</div>
+  <div class="step" id="step2"><div class="step-num">2</div>Serviço</div>
+  <div class="step" id="step3"><div class="step-num">3</div>Data & Hora</div>
+  <div class="step" id="step4"><div class="step-num">4</div>Seus dados</div>
+  <div class="step" id="step5"><div class="step-num">5</div>Confirmar</div>
+</div>
+
+<!-- PANEL 1 -->
+<div class="panel active" id="panel1">
+  <div class="ptitle">Com quem você quer ser atendida?</div>
+  <div class="psub">Escolha a profissional</div>
+  <div class="prof-grid">
+    <div class="prof-card" onclick="selProf(this,'Najla','Najla — Cabelo · Tecnica Erik Kened')">
+      <div class="avatar" style="background:#C9736A;">NJ</div>
+      <div><div class="pname">Najla</div>
+      <div class="prole">Alisamento · Corte · Coloração · Cronogramas · Técnica Erik Kened</div></div>
+    </div>
+    <div class="prof-card" onclick="selProf(this,'Barbara','Barbara — Designer de Sobrancelhas')">
+      <div class="avatar" style="background:#B8935A;">BB</div>
+      <div><div class="pname">Bárbara</div>
+      <div class="prole">Design · Henna · Tintura · Brow Lamination · Plástica dos Pés</div></div>
+    </div>
+    <div class="prof-card" onclick="selProf(this,'Louisye','Louisye — Manicure & Nail Designer')">
+      <div class="avatar" style="background:#7B5EA7;">LY</div>
+      <div><div class="pname">Louisye</div>
+      <div class="prole">Manicure · Pedicure · Nail Design · Alongamento · Gel</div></div>
+    </div>
+  </div>
+  <button class="btn btn-primary" style="margin-top:18px" onclick="goNext(1)">Continuar →</button>
+</div>
+
+<!-- PANEL 2 -->
+<div class="panel" id="panel2">
+  <div class="ptitle">Qual serviço?</div>
+  <div class="psub" id="prof-label">Serviços disponíveis</div>
+  <div class="servico-grid" id="servicos-container"></div>
+  <div style="display:flex;gap:8px;margin-top:18px;">
+    <button class="btn btn-secondary" style="width:40%" onclick="goBack(2)">← Voltar</button>
+    <button class="btn btn-primary" style="width:60%" onclick="goNext(2)">Continuar →</button>
+  </div>
+</div>
+
+<!-- PANEL 3 -->
+<div class="panel" id="panel3">
+  <div class="ptitle">Data e horário</div>
+  <div class="psub">Selecione um dia disponível</div>
+  <div class="cal-nav">
+    <button onclick="changeMes(-1)">‹</button>
+    <div class="cal-month" id="cal-label"></div>
+    <button onclick="changeMes(1)">›</button>
+  </div>
+  <div class="cal-grid" id="cal-grid">
+    <div class="cal-dow">Dom</div><div class="cal-dow">Seg</div><div class="cal-dow">Ter</div>
+    <div class="cal-dow">Qua</div><div class="cal-dow">Qui</div><div class="cal-dow">Sex</div>
+    <div class="cal-dow">Sáb</div>
+  </div>
+  <div id="horarios-sec" style="display:none">
+    <div class="divider"></div>
+    <div style="font-weight:600;font-size:13px;margin-bottom:10px;color:var(--cinza)">
+      Horários para <span id="data-label" style="color:var(--rosa)"></span>
+    </div>
+    <div class="horario-grid" id="horarios-grid"></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:18px;">
+    <button class="btn btn-secondary" style="width:40%" onclick="goBack(3)">← Voltar</button>
+    <button class="btn btn-primary" style="width:60%" onclick="goNext(3)">Continuar →</button>
+  </div>
+</div>
+
+<!-- PANEL 4 -->
+<div class="panel" id="panel4">
+  <div class="ptitle">Seus dados</div>
+  <div class="psub">Para confirmarmos o agendamento</div>
+  <div class="form-group">
+    <label class="form-label">Nome completo *</label>
+    <input class="form-input" id="inp-nome" type="text" placeholder="Ex: Maria Silva">
+    <div class="error-msg" id="err-nome">Por favor, informe seu nome</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">WhatsApp *</label>
+    <input class="form-input" id="inp-wpp" type="tel" placeholder="(61) 9XXXX-XXXX">
+    <div class="error-msg" id="err-wpp">Por favor, informe seu WhatsApp</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Como nos conheceu?</label>
+    <select class="form-input" id="inp-como">
+      <option value="">Selecione...</option>
+      <option>Instagram @nlstudio_1</option>
+      <option>Indicação de amiga</option>
+      <option>Google</option>
+      <option>Passei na frente</option>
+      <option>WhatsApp</option>
+      <option>Outro</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Observações (opcional)</label>
+    <textarea class="form-input" id="inp-obs" rows="3" placeholder="Ex: cabelo longo, quero tirar dúvidas..."></textarea>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:6px;">
+    <button class="btn btn-secondary" style="width:40%" onclick="goBack(4)">← Voltar</button>
+    <button class="btn btn-primary" style="width:60%" onclick="goNext(4)">Revisar →</button>
+  </div>
+</div>
+
+<!-- PANEL 5 -->
+<div class="panel" id="panel5">
+  <div class="ptitle">Confirmar agendamento</div>
+  <div class="psub">Revise antes de confirmar</div>
+  <div class="resumo-card">
+    <div class="resumo-row"><span class="rlabel">Profissional</span><span class="rvalue" id="res-prof">—</span></div>
+    <div class="resumo-row"><span class="rlabel">Serviço</span><span class="rvalue" id="res-serv">—</span></div>
+    <div class="resumo-row"><span class="rlabel">Data</span><span class="rvalue" id="res-data">—</span></div>
+    <div class="resumo-row"><span class="rlabel">Horário</span><span class="rvalue" id="res-hora">—</span></div>
+    <div class="resumo-row"><span class="rlabel">Nome</span><span class="rvalue" id="res-nome">—</span></div>
+    <div class="resumo-row"><span class="rlabel">WhatsApp</span><span class="rvalue" id="res-wpp">—</span></div>
+    <div class="resumo-row" style="margin-top:4px;padding-top:10px;border-top:2px solid var(--borda)">
+      <span class="rlabel" style="font-weight:600">Valor estimado</span>
+      <span class="rprice" id="res-preco">—</span>
+    </div>
+  </div>
+  <div style="background:var(--ouro-pale);border-radius:10px;padding:11px 13px;font-size:12px;color:#7A5A1A;margin-bottom:14px;">
+    ⓘ Pagamento presencial no salão. Valor pode variar conforme comprimento e condição.
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn btn-secondary" style="width:40%" onclick="goBack(5)">← Voltar</button>
+    <button class="btn btn-primary" style="width:60%" onclick="confirmar()">✓ Confirmar</button>
+  </div>
+</div>
+
+<!-- PANEL 6 -->
+<div class="panel" id="panel6">
+  <div class="confirmacao">
+    <div class="check-circle">✓</div>
+    <div class="conf-title">Agendamento confirmado!</div>
+    <div class="conf-sub">Seu horário foi reservado. Te esperamos no NL Studio Beauty!</div>
+    <div class="conf-box">
+      <div class="conf-row"><span>👩‍🎤</span><span><strong id="conf-prof">—</strong></span></div>
+      <div class="conf-row"><span>✂️</span><span><strong id="conf-serv">—</strong></span></div>
+      <div class="conf-row"><span>📅</span><span><strong id="conf-data">—</strong></span></div>
+      <div class="conf-row"><span>🕐</span><span><strong id="conf-hora">—</strong></span></div>
+      <div class="conf-row"><span>📍</span><span>SQ 16 Q5 Lote 27D, 1º Andar · Cidade Ocidental</span></div>
+      <div class="conf-row"><span>📱</span><span>(61) 98180-6389 · @nlstudio_1</span></div>
+    </div>
+    <a class="wpp-btn" id="wpp-link" href="#" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      Enviar confirmação no WhatsApp
+    </a>
+    <button class="novo-btn" onclick="reiniciar()">+ Novo agendamento</button>
+  </div>
+</div>
+
+<script>
+const TEL = "5561981806389";
+const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+               "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+
+// Horários por profissional e dia (sáb = dia 6)
+const HORARIOS = {
+  semana: ["09:00","09:30","10:00","10:30","13:40","14:10","14:40","15:10","15:40","16:10","16:40","17:10","17:40"],
+  sabado: ["08:40","09:10","09:40","10:10","10:40","13:40","14:10","14:40","15:10","15:40","16:10","16:40","17:10","17:40","18:10","18:40"]
+};
+
+const SERVICOS = {
+  Najla: [
+    {n:"Escova Simples (P)",          dur:"1h",       p:"R$ 60"},
+    {n:"Escova Simples (M)",          dur:"1h",       p:"R$ 80"},
+    {n:"Escova Simples (G)",          dur:"1h30",     p:"R$ 110"},
+    {n:"Corte Simples",               dur:"1h",       p:"R$ 70"},
+    {n:"Corte + Escova",              dur:"1h30",     p:"R$ 110"},
+    {n:"Corte + Escova + Tratamento", dur:"2h",       p:"R$ 150"},
+    {n:"Coloração Vegana Simples",    dur:"2h",       p:"R$ 100–200"},
+    {n:"Coloração + Escova",          dur:"2h30",     p:"R$ 150–280"},
+    {n:"Cronograma 3 sessões (P)",    dur:"1h30/ses", p:"R$ 270 (pacote)"},
+    {n:"Cronograma 3 sessões (M)",    dur:"2h/ses",   p:"R$ 350 (pacote)"},
+    {n:"Protocolo Completo 6 ses.",   dur:"2h/ses",   p:"R$ 650–1.100"},
+    {n:"Realinhamento Vegano (P)",    dur:"3h",       p:"R$ 350"},
+    {n:"Realinhamento Vegano (M)",    dur:"3h30",     p:"R$ 450"},
+    {n:"Realinhamento Vegano (G)",    dur:"4h",       p:"R$ 580"},
+    {n:"Mechas Simples",              dur:"3h",       p:"R$ 350–650"},
+    {n:"Mechas + Protocolo Rec.",     dur:"3h+ret.",  p:"R$ 480–870"},
+  ],
+  Barbara: [
+    {n:"Design de Sobrancelha",           dur:"30min", p:"R$ 40"},
+    {n:"Design + Henna",                  dur:"40min", p:"R$ 50"},
+    {n:"Design + Tintura",                dur:"40min", p:"R$ 50"},
+    {n:"Design + Henna e Tintura",        dur:"50min", p:"R$ 60"},
+    {n:"Brow Lamination",                 dur:"1h",    p:"R$ 100"},
+    {n:"Plástica dos Pés",                dur:"1h",    p:"R$ 70"},
+    {n:"Manutenção da Plástica",          dur:"45min", p:"R$ 60"},
+  ],
+  Louisye: [
+    {n:"Pé e Mão",                        dur:"1h30",  p:"R$ 55"},
+    {n:"Pé ou Mão",                       dur:"45min", p:"R$ 30"},
+    {n:"Blindagem",                       dur:"1h",    p:"R$ 50"},
+    {n:"Colocação de Gel (Pé ou Mão)",    dur:"30min", p:"R$ 10/cd"},
+    {n:"Alongamento Decorado",            dur:"2h30",  p:"R$ 150"},
+    {n:"Manutenção Decorado",             dur:"2h",    p:"R$ 130"},
+    {n:"Alongamento Simples",             dur:"2h",    p:"R$ 130"},
+    {n:"Manutenção Simples",              dur:"1h30",  p:"R$ 110"},
+    {n:"Banho de Gel Decorado",           dur:"2h",    p:"R$ 110"},
+    {n:"Manutenção Banho Gel Dec.",       dur:"1h30",  p:"R$ 90"},
+    {n:"Banho de Gel Simples",            dur:"1h30",  p:"R$ 90"},
+    {n:"Manutenção Banho Gel Simples",    dur:"1h",    p:"R$ 70"},
+    {n:"Remoção de Alongamento",          dur:"45min", p:"R$ 40"},
+    {n:"Colocação de Adesivos (Par)",     dur:"5min",  p:"R$ 3"},
+  ],
+};
+
+const st = {prof:null,profLabel:null,serv:null,servPreco:null,data:null,dataStr:null,hora:null,nome:null,wpp:null};
+let calDate = new Date();
+
+function renderCal() {
+  const grid = document.getElementById('cal-grid');
+  grid.querySelectorAll('.cal-day').forEach(e=>e.remove());
+  const y=calDate.getFullYear(), m=calDate.getMonth();
+  document.getElementById('cal-label').textContent=`${MESES[m]} ${y}`;
+  const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
+  const today=new Date(); today.setHours(0,0,0,0);
+  for(let i=0;i<first;i++){const e=document.createElement('div');e.className='cal-day empty';grid.appendChild(e);}
+  for(let d=1;d<=days;d++){
+    const el=document.createElement('div'); el.className='cal-day'; el.textContent=d;
+    const dt=new Date(y,m,d); dt.setHours(0,0,0,0);
+    if(dt<today||dt.getDay()===0){el.classList.add('disabled');}
+    else{
+      if(dt.getTime()===today.getTime()) el.classList.add('today');
+      if(st.data&&st.data.getTime()===dt.getTime()) el.classList.add('selected');
+      el.onclick=()=>selDay(dt,d,m,y,el);
+    }
+    grid.appendChild(el);
+  }
+}
+
+function selDay(dt,d,m,y,el){
+  document.querySelectorAll('.cal-day.selected').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected'); st.data=dt;
+  st.dataStr=`${String(d).padStart(2,'0')}/${String(m+1).padStart(2,'0')}/${y}`;
+  document.getElementById('data-label').textContent=st.dataStr;
+  renderHorarios(dt);
+  document.getElementById('horarios-sec').style.display='block';
+}
+
+function renderHorarios(dt){
+  const grid=document.getElementById('horarios-grid'); grid.innerHTML=''; st.hora=null;
+  const lista=dt.getDay()===6?HORARIOS.sabado:HORARIOS.semana;
+  const seed=dt.getDate()+dt.getMonth();
+  const ocupados=lista.filter((_,i)=>(i+seed)%7===3||(i+seed)%9===1);
+  lista.forEach(h=>{
+    const btn=document.createElement('div'); btn.className='horario-btn'; btn.textContent=h;
+    if(ocupados.includes(h)){btn.classList.add('ocupado');}
+    else{btn.onclick=()=>{document.querySelectorAll('.horario-btn.selected').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');st.hora=h;};}
+    grid.appendChild(btn);
+  });
+}
+
+function changeMes(d){calDate=new Date(calDate.getFullYear(),calDate.getMonth()+d,1);renderCal();}
+
+function selProf(card,key,label){
+  document.querySelectorAll('.prof-card').forEach(c=>c.classList.remove('selected'));
+  card.classList.add('selected'); st.prof=key; st.profLabel=label;
+}
+
+function renderServicos(){
+  const cont=document.getElementById('servicos-container'); cont.innerHTML='';
+  document.getElementById('prof-label').textContent=`Serviços com ${st.profLabel||st.prof}`;
+  (SERVICOS[st.prof]||[]).forEach(s=>{
+    const el=document.createElement('div'); el.className='servico-item';
+    if(st.serv===s.n) el.classList.add('selected');
+    el.innerHTML=`<div><div class="snome">${s.n}</div><div class="sdur">⏱ ${s.dur}</div></div><div class="spreco">${s.p}</div>`;
+    el.onclick=()=>{document.querySelectorAll('.servico-item.selected').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');st.serv=s.n;st.servPreco=s.p;};
+    cont.appendChild(el);
+  });
+}
+
+function goNext(from){
+  if(from===1&&!st.prof){alert('Selecione uma profissional');return;}
+  if(from===2&&!st.serv){alert('Selecione um serviço');return;}
+  if(from===3){if(!st.data){alert('Selecione uma data');return;}if(!st.hora){alert('Selecione um horário');return;}}
+  if(from===4){
+    const n=document.getElementById('inp-nome').value.trim(),w=document.getElementById('inp-wpp').value.trim();
+    let ok=true;
+    if(!n){document.getElementById('err-nome').style.display='block';ok=false;}else document.getElementById('err-nome').style.display='none';
+    if(!w){document.getElementById('err-wpp').style.display='block';ok=false;}else document.getElementById('err-wpp').style.display='none';
+    if(!ok)return; st.nome=n; st.wpp=w;
+    st.como=document.getElementById('inp-como').value; st.obs=document.getElementById('inp-obs').value;
+  }
+  if(from===2) renderCal();
+  showPanel(from+1);
+  if(from===4) preencheResumo();
+}
+
+function goBack(from){showPanel(from-1);}
+
+function showPanel(n){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.step').forEach((s,i)=>{s.classList.remove('active','done');if(i<n-1)s.classList.add('done');if(i===n-1)s.classList.add('active');});
+  document.getElementById(`panel${n}`).classList.add('active');
+  if(n===2) renderServicos();
+}
+
+function preencheResumo(){
+  document.getElementById('res-prof').textContent=st.profLabel||st.prof;
+  document.getElementById('res-serv').textContent=st.serv;
+  document.getElementById('res-data').textContent=st.dataStr;
+  document.getElementById('res-hora').textContent=st.hora;
+  document.getElementById('res-nome').textContent=st.nome;
+  document.getElementById('res-wpp').textContent=st.wpp;
+  document.getElementById('res-preco').textContent=st.servPreco;
+}
+
+function confirmar(){
+  document.getElementById('conf-prof').textContent=st.profLabel||st.prof;
+  document.getElementById('conf-serv').textContent=st.serv;
+  document.getElementById('conf-data').textContent=st.dataStr;
+  document.getElementById('conf-hora').textContent=st.hora;
+  const obs=st.obs||'Nenhuma';
+  const msg=encodeURIComponent(
+    `Ola! Agendei pelo site do NL Studio Beauty.\n\n`+
+    `*Profissional:* ${st.profLabel}\n*Servico:* ${st.serv}\n`+
+    `*Data:* ${st.dataStr}\n*Horario:* ${st.hora}\n`+
+    `*Nome:* ${st.nome}\n*WhatsApp:* ${st.wpp}\n*Obs:* ${obs}\n\nAguardo confirmacao!`
+  );
+  document.getElementById('wpp-link').href=`https://wa.me/${TEL}?text=${msg}`;
+  showPanel(6);
+  document.querySelector('.steps').style.display='none';
+}
+
+function reiniciar(){
+  Object.keys(st).forEach(k=>st[k]=null);
+  document.querySelector('.steps').style.display='flex';
+  showPanel(1);
+  document.getElementById('inp-nome').value='';
+  document.getElementById('inp-wpp').value='';
+  document.getElementById('inp-obs').value='';
+}
+
+renderCal();
+</script>
+</body>
+</html>
